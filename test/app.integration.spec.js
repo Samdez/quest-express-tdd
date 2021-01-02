@@ -14,20 +14,21 @@ describe('Test routes', () => {
         const expected = { message: 'Hello World!'};
         expect(response.body).toEqual(expected);
         done();
-      })
-  })
+      });
+  });
 
-  it('POST /bookmarks error(field missing)', (done) => {
+  it('POST /bookmarks - error (fields missing) ', (done) => {
     request(app)
       .post('/bookmarks')
       .send({})
       .expect(422)
+      .expect('Content-Type', /json/)
       .then(response => {
-        const expected = { "error": "required field(s) missing"}
+        const expected = { error: 'required field(s) missing' };
         expect(response.body).toEqual(expected);
         done();
-      })
-  })
+      });
+  });
 
   it('POST /bookmarks - OK (fields provided) ', (done) => {
     request(app)
@@ -43,24 +44,35 @@ describe('Test routes', () => {
       .catch(done);
   });
 
-  // describe('GET /bookmarks/:id', () => {
-  //   const testBookmark = { url: 'https://nodejs.org/', title: 'Node.js' };
-  //   beforeEach((done) => connection.query(
-  //     'TRUNCATE bookmark', () => connection.query(
-  //       'INSERT INTO bookmark SET ?', testBookmark, done
-  //     )
-  //   ));
+  describe('GET /bookmark/:id', () => {
+    const testBookmark = { url: 'https://nodejs.org/', title: 'Node.js' };
+    beforeEach((done) => connection.query(
+      'TRUNCATE bookmark', () => connection.query(
+        'INSERT INTO bookmark SET ?', testBookmark, done
+      )
+    ));
 
-  //   it('GET /bookmark/:id error(id not found)', (done) => {
-  //     request(app)
-  //       .get('/bookmark/:id')
-  //       .expect(404)
-  //       .expect('Content-Type', /json/)
-  //       .then(response => {
-  //         const expected = { error: 'Bookmark not found'}
-  //         expect(response.body).toEqual(expected);
-  //         done();
-  //       })
-  //   })
-  // })
+    it('GET /bookmark/:id error(id not found)', (done) => {
+      request(app)
+        .get('/bookmark/:id')
+        .expect(404)
+        .then(response => {
+          const expected = { error: 'Bookmark not found'}
+          expect(response.body).toEqual(expected);
+          done();
+        })
+    })
+
+    it('GET /bookmark/:id', (done) => {
+      request(app)
+        .get('/bookmark/1')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(response => {
+          const expected = { ...testBookmark, id: 1}
+          expect(response.body).toEqual(expected);
+          done();
+        })
+    })
+  })
 })
